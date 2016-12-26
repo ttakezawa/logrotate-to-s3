@@ -1,4 +1,4 @@
-# logrotate-to-s3
+# logrotate-to-s3 [![Build Status](https://travis-ci.org/ttakezawa/logrotate-to-s3.svg?branch=master)](https://travis-ci.org/ttakezawa/logrotate-to-s3)
 
   gzip the log file, rename the file to the current timestamp, and upload to s3.
 
