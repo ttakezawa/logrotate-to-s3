@@ -43,3 +43,16 @@ teardown() {
   [ $(expr "${lines[0]}" : ".*$(basename "$file1").1.gz s3://${bucket}/logrotate/$(hostname)/$(date '+%Y/%m')/$(basename "$file1").$(date '+%Y%m')[0-9-]*.gz$") -ne 0 ]
   [ $(expr "${lines[1]}" : ".*$(basename "$file2").1.gz s3://${bucket}/logrotate/$(hostname)/$(date '+%Y/%m')/$(basename "$file2").$(date '+%Y%m')[0-9-]*.gz$") -ne 0 ]
 }
+
+@test "process gzipped paths" {
+  bucket=test-bucket
+  test_dir=$TEST_DIR
+
+  file="${test_dir}/test.log"
+  echo test > "${file}.1.gz"
+
+  UPLOAD_CMD="echo" run logrotate-to-s3 "$bucket" "$file"
+
+  [ "$status" -eq 0 ]
+  [ $(expr "${lines[0]}" : ".*$(basename "$file").1.gz s3://${bucket}/logrotate/$(hostname)/$(date '+%Y/%m')/$(basename "$file").$(date '+%Y%m')[0-9-]*.gz$") -ne 0 ]
+}
