@@ -23,6 +23,8 @@ Environment variables:
 
   S3_PATH is the path prefix of the S3. The default is "logrotate".
   NAME_PREFIX is the name prefix of the uploaded file. The default is "".
+  PREFIX is the directory prefix of the uploaded file. The default is "{hostname}/%Y/%m"
+  SUFFIX is the name suffix of the uploaded file. The default is "%Y%m%d-%H%M%S"
   UPLOAD_CMD is used for uploading to S3. The default is "aws s3 cp". You may set it as "s3cmd put", "gof3r cp --endpoint s3-ap-northeast-1.amazonaws.com" and so on.
 
 Examples:
@@ -32,6 +34,9 @@ Examples:
 
   $ S3_PATH=archive/staging NAME_PREFIX=nginx logrotate-to-s3 mybucket /var/log/nginx/access.log
     => s3://mybucket/archive/staging/your-hostname/2016/01/nginx-access.log.20160102-030405.gz
+
+  $ S3_PATH=app-log PREFIX="dt=$(date "+%Y-%m-%d")" logrotate-to-s3 mybucket /var/log/nginx/access.log
+    => s3://mybucket/app-log/dt=2016-01-02/nginx-access.log.20160102-030405.gz
 
 Configuration logroate:
 
@@ -85,14 +90,16 @@ set -euo pipefail
 # If you have changed logortate setting, you may change here.
 readonly dateext_suffix="-$(date "+%Y%m%d")" # "-%Y%m%d" is default `dateformat' of logrotate.
 readonly start_count=1                       # "1" is default `start' of logrotate.
+readonly default_prefix="$(hostname)/$(date "+%Y/%m")"
+readonly default_suffix="$(date "+%Y%m%d-%H%M%S")"
 
 # Default Configurations
 readonly s3_path=${S3_PATH:-logrotate}
 readonly name_prefix=${NAME_PREFIX:+$NAME_PREFIX-}
 readonly upload_cmd=${UPLOAD_CMD:-aws s3 cp}
 
-readonly prefix=$(hostname)/$(date "+%Y/%m")
-readonly suffix=$(date "+%Y%m%d-%H%M%S")
+readonly prefix=${PREFIX:-$default_prefix}
+readonly suffix=${SUFFIX:-$default_suffix}
 
 # Temporary workspace
 readonly tmpdir=$(mktemp -d)
